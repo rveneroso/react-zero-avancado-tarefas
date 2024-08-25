@@ -2,19 +2,34 @@ import { useState } from 'react';
 import './home.css';
 
 import { Link } from 'react-router-dom';
+
+import { auth } from '../../firebaseConnection';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+
+import { useNavigate } from 'react-router-dom';
+
 export default function Home(){
 
   const[email, setEmail] = useState('')
   const[password, setPassword] = useState('')
 
+  const navigate = useNavigate();
+
   /*
     * A chamada à função handleLogin é feita como resultado da submissão do formulário. Por isso o
     * parâmetro 'e' é passado à função.
   */
-  function handleLogin(e){
+  async function handleLogin(e){
+    console.log('Fazendo login com ', email, password);
     e.preventDefault();
-    if(email !== '' && password != '') {
-      alert("TESTE")
+    if(email !== '' && password !== '') {
+      await signInWithEmailAndPassword(auth, email, password)
+      .then(() => {
+        navigate('/admin', { replace: true})
+      })
+      .catch((error) => {
+        console.log("ERRO AO FAZER O LOGIN", error)
+      })
     } else {
       alert("Preencha todos os campos");
     }
@@ -35,7 +50,6 @@ export default function Home(){
         />
 
         <input
-          autoComplete={false}
           type="password"
           placeholder='*******'
           value={password}
