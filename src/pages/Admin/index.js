@@ -8,14 +8,16 @@ import {
     onSnapshot,
     query,
     orderBy,
-    where
+    where,
+    doc,
+    deleteDoc
 } from 'firebase/firestore';
 
 export default function Admin(){
 
     const [tarefaInput, setTarefaInput] = useState('');
     const [user, setUser] = useState({});
-    const [tarefas, setTarefas] = useState({});
+    const [tarefas, setTarefas] = useState([]);
 
     useEffect(() => {
         async function loadTarefas(){
@@ -36,12 +38,9 @@ export default function Admin(){
                             userId: doc.data().userId
                         })
                     })
-                    console.log('lista', lista);
                     setTarefas(lista);
                 })
-            } else {
-                console.log('Sem userDetail para exibir');
-            }
+            };
         }
 
         loadTarefas();
@@ -73,6 +72,10 @@ export default function Admin(){
         await signOut(auth);
     }
 
+    async function deletarTarefa(id) {
+        const docRef = doc(db, "tarefas", id);
+        await deleteDoc(docRef);
+    }
     return(
         <div className="admin-container">
             <h1>Minhas Tarefas</h1>
@@ -86,13 +89,15 @@ export default function Admin(){
                 <button className="btn-register" type="submit">Registrar Tarefa</button>
             </form>
 
-            <article className="list">
-                <p>Estudar javascript e reactjs hoje à noite</p>
+            {tarefas.map((item) => (
+                <article key={item.id} className="list">
+                <p>{item.tarefa}</p>
                 <div>
                     <button>Editar</button>
-                    <button className="btn-delete">Concluir</button>
+                    <button onClick={ () => deletarTarefa(item.id)} className="btn-delete">Concluir</button>
                 </div>
             </article>
+            ))}
 
             <button className="btn-logout" onClick={handleLogout}>Sair</button>
         </div>
