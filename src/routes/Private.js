@@ -13,9 +13,8 @@ export default function Private({ children }) {
         async function checkLogin(){
             const unsub = onAuthStateChanged(auth, (user) => {
                 if(user){
-                    console.log('user = ',user);
                     const userData = {
-                        uid: user.id,
+                        uid: user.uid,
                         email: user.email,
                     }
                     localStorage.setItem("@detailUser", JSON.stringify(userData))
