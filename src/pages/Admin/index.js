@@ -4,18 +4,44 @@ import { auth, db } from '../../firebaseConnection';
 import { signOut } from '@firebase/auth';
 import {
     addDoc,
-    collection
+    collection,
+    onSnapshot,
+    query,
+    orderBy,
+    where
 } from 'firebase/firestore';
 
 export default function Admin(){
 
     const [tarefaInput, setTarefaInput] = useState('');
     const [user, setUser] = useState({});
+    const [tarefas, setTarefas] = useState({});
 
     useEffect(() => {
         async function loadTarefas(){
             const userDetail = localStorage.getItem("@detailUser")
             setUser(JSON.parse(userDetail))
+            if(userDetail) {
+                const data = JSON.parse(userDetail);
+                const tarefaRef = collection(db, "tarefas");
+                const q = query(tarefaRef, orderBy("created", "desc"), where("userUid", "==", data?.uid))
+
+                const unsub = onSnapshot(q, (snapshot) => {
+                    let lista = [];
+
+                    snapshot.forEach((doc) => {
+                        lista.push({
+                            id: doc.id,
+                            tarefa: doc.data().tarefa,
+                            userId: doc.data().userId
+                        })
+                    })
+                    console.log('lista', lista);
+                    setTarefas(lista);
+                })
+            } else {
+                console.log('Sem userDetail para exibir');
+            }
         }
 
         loadTarefas();
@@ -30,7 +56,7 @@ export default function Admin(){
 
         await addDoc(collection(db, "tarefas"), {
             tarefa: tarefaInput,
-            create: new Date(),
+            created: new Date(),
             userUid: user?.uid
         })
         .then(() => {
